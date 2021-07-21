@@ -1,57 +1,35 @@
-package se.kth.depclean.core.analysis;
-
-/*
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
- */
+package se.kth.depclean.analysis;
 
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
-import org.apache.maven.artifact.Artifact;
+import org.gradle.api.artifacts.ResolvedArtifact;
+import org.gradle.api.component.Artifact;
 
-/**
- * Project dependencies analysis result.
- */
-public class ProjectDependencyAnalysis {
+public class GradleProjectDependencyAnalysis {
 
   /**
    * Store all the used declared artifacts (ie. used direct dependencies).
    */
-  private final Set<Artifact> usedDeclaredArtifacts;
+  private final Set<ResolvedArtifact> usedDeclaredArtifacts;
 
   /**
    * Store all the used undeclared artifacts (ie. used transitive dependencies).
    */
-  private final Set<Artifact> usedUndeclaredArtifacts;
+  private final Set<ResolvedArtifact> usedUndeclaredArtifacts;
 
   /**
    * Store all the unused declared artifacts (ie. unused transitive dependencies).
    */
-  private final Set<Artifact> unusedDeclaredArtifacts;
+  private final Set<ResolvedArtifact> unusedDeclaredArtifacts;
 
   /**
-   * Ctor.
+   * The only or default constructor to invoke this class object.
    */
-  public ProjectDependencyAnalysis(
-      Set<Artifact> usedDeclaredArtifacts,
-      Set<Artifact> usedUndeclaredArtifacts,
-      Set<Artifact> unusedDeclaredArtifacts) {
+  public GradleProjectDependencyAnalysis(
+          final Set<ResolvedArtifact> usedDeclaredArtifacts,
+          final Set<ResolvedArtifact> usedUndeclaredArtifacts,
+          final Set<ResolvedArtifact> unusedDeclaredArtifacts) {
     this.usedDeclaredArtifacts = safeCopy(usedDeclaredArtifacts);
     this.usedUndeclaredArtifacts = safeCopy(usedUndeclaredArtifacts);
     this.unusedDeclaredArtifacts = safeCopy(unusedDeclaredArtifacts);
@@ -63,21 +41,9 @@ public class ProjectDependencyAnalysis {
    * @param set required set.
    * @return An unmodifiable set corresponding to the provided set.
    */
-  private Set<Artifact> safeCopy(Set<Artifact> set) {
+  private Set<ResolvedArtifact> safeCopy(final Set<ResolvedArtifact> set) {
     return (set == null) ? Collections.emptySet()
-        : Collections.unmodifiableSet(new LinkedHashSet<Artifact>(set));
-  }
-
-  /**
-   * Filter out artifacts with scope other than compile from the set of unused declared artifacts.
-   *
-   * @return updated project dependency analysis
-   * @since 1.3
-   */
-  public ProjectDependencyAnalysis ignoreNonCompile() {
-    Set<Artifact> filteredUnusedDeclared = new HashSet<>(unusedDeclaredArtifacts);
-    filteredUnusedDeclared.removeIf(artifact -> !artifact.getScope().equals(Artifact.SCOPE_COMPILE));
-    return new ProjectDependencyAnalysis(usedDeclaredArtifacts, usedUndeclaredArtifacts, filteredUnusedDeclared);
+        : Collections.unmodifiableSet(new LinkedHashSet<ResolvedArtifact>(set));
   }
 
   /**
@@ -96,18 +62,14 @@ public class ProjectDependencyAnalysis {
    *
    * @return {@link Artifact}
    */
-  public Set<Artifact> getUsedDeclaredArtifacts() {
-    return usedDeclaredArtifacts;
-  }
-
-  // Object methods ---------------------------------------------------------
+  public Set<ResolvedArtifact> getUsedDeclaredArtifacts() { return usedDeclaredArtifacts; }
 
   /**
    * Used but not declared artifacts.
    *
    * @return {@link Artifact}
    */
-  public Set<Artifact> getUsedUndeclaredArtifacts() {
+  public Set<ResolvedArtifact> getUsedUndeclaredArtifacts() {
     return usedUndeclaredArtifacts;
   }
 
@@ -116,7 +78,7 @@ public class ProjectDependencyAnalysis {
    *
    * @return {@link Artifact}
    */
-  public Set<Artifact> getUnusedDeclaredArtifacts() {
+  public Set<ResolvedArtifact> getUnusedDeclaredArtifacts() {
     return unusedDeclaredArtifacts;
   }
 
@@ -124,14 +86,13 @@ public class ProjectDependencyAnalysis {
    * Overrides the standard equals method of Object.
    */
   @Override
-  public boolean equals(Object object) {
-    if (object instanceof ProjectDependencyAnalysis) {
-      ProjectDependencyAnalysis analysis = (ProjectDependencyAnalysis) object;
+  public boolean equals(final Object object) {
+    if (object instanceof GradleProjectDependencyAnalysis) {
+      GradleProjectDependencyAnalysis analysis = (GradleProjectDependencyAnalysis) object;
       return getUsedDeclaredArtifacts().equals(analysis.getUsedDeclaredArtifacts())
           && getUsedUndeclaredArtifacts().equals(analysis.getUsedUndeclaredArtifacts())
           && getUnusedDeclaredArtifacts().equals(analysis.getUnusedDeclaredArtifacts());
     }
-
     return false;
   }
 
